@@ -612,10 +612,23 @@ void CliProcessor::saveFile(const CliOpenFile& cof)
   SelectedLayers filteredLayers;
   LayerList allLayers = doc->sprite()->allLayers();
   LayerList layers;
+  Console console;
   // --save-as with --split-layers or --split-tags
   if (cof.splitLayers) {
-    for (doc::Layer* layer : doc->sprite()->allVisibleLayers())
+    for (doc::Layer* layer : doc->sprite()->allVisibleLayers()) {
+      // CUSTOM: Export layers as original status
+      if (layer->isImage()) {
+        LayerImage* layerImg = dynamic_cast<LayerImage*>(layer);
+        console.printf("%s", layer->name().c_str());
+        if (layerImg->blendMode() != BlendMode::NORMAL) {
+          console.printf(" ===> %s", blend_mode_to_string(layerImg->blendMode()).c_str());
+          layerImg->setBlendMode(BlendMode::NORMAL);
+          layerImg->setOpacity(255);
+        }
+        console.printf("\n");
+      }
       layers.push_back(layer);
+    }
   }
   else {
     // Filter layers
